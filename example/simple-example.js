@@ -53,15 +53,33 @@ function HeadsBolt() {
 
 }
 
+function TailsBolt() {
+
+    this.process = function(message, context) {
+
+        Logger.info("Tails ", message.coin);
+
+        // Acknowledge
+        context.ack(message);
+
+        // Pass data along
+        context.emit(message);
+
+    }
+
+}
+
 // Spout and Bolt implementation
 var coinTossSpout = new CoinSpout();
 var headsBolt = new HeadsBolt();
+var tailsBolt = new TailsBolt();
 
 var cloud = new nStorm();
 
 // Setting up topology using the topology builder
 cloud.addBlock("coindTossSpout", coinTossSpout);
-cloud.addBlock("headsBolt", headsBolt).input("coindTossSpout");
+cloud.addBlock("headsBolt", headsBolt).input("coindTossSpout", {coin: "heads"});
+cloud.addBlock("tailsBolt", tailsBolt).input("coindTossSpout", {coin: "tails"});
 
 // Setup cluster, and run topology...
 cloud.start();
